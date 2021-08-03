@@ -21625,6 +21625,7 @@ static int test_wc_ecc_pointFns (void)
 
     printf(resultFmt, ret == 0 ? passed : failed);
 
+#if !defined(HAVE_FIPS) || (defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION>2))
 #ifdef USE_ECC_B_PARAM
     printf(testingFmt, "wc_ecc_point_is_on_curve()");
     /* On curve if ret == 0 */
@@ -21645,6 +21646,7 @@ static int test_wc_ecc_pointFns (void)
     }
     printf(resultFmt, ret == 0 ? passed : failed);
 #endif /* USE_ECC_B_PARAM */
+#endif /* !HAVE_FIPS || HAVE_FIPS_VERSION > 2 */
 
     /* Free */
     wc_ecc_del_point(point);

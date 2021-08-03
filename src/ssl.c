@@ -13362,7 +13362,14 @@ WOLFSSL_SESSION* GetSession(WOLFSSL* ssl, byte* masterSecret,
 
     (void)       restoreSessionCerts;
 
-    if (ssl->options.sessionCacheOff)
+    if (ssl->options.sessionCacheOff
+#if defined(HAVE_SESSION_TICKET) && defined(WOLFSSL_FORCE_CACHE_ON_TICKET)
+            && ssl->session.ticketLen == 0
+#endif
+#ifdef OPENSSL_EXTRA
+            && ssl->options.side != WOLFSSL_CLIENT_END
+#endif
+            )
         return NULL;
 
     if (ssl->options.haveSessionId == 0)
@@ -13567,7 +13574,14 @@ static int GetDeepCopySession(WOLFSSL* ssl, WOLFSSL_SESSION* copyFrom)
 
 int SetSession(WOLFSSL* ssl, WOLFSSL_SESSION* session)
 {
-    if (ssl->options.sessionCacheOff)
+    if (ssl == NULL || (ssl->options.sessionCacheOff
+#if defined(HAVE_SESSION_TICKET) && defined(WOLFSSL_FORCE_CACHE_ON_TICKET)
+            && session->ticketLen == 0
+#endif
+#ifdef OPENSSL_EXTRA
+            && ssl->options.side != WOLFSSL_CLIENT_END
+#endif
+            ))
         return WOLFSSL_FAILURE;
 
 #ifdef OPENSSL_EXTRA
@@ -13625,7 +13639,14 @@ int AddSession(WOLFSSL* ssl)
     int cbRet = 0;
 #endif
 
-    if (ssl->options.sessionCacheOff)
+    if (ssl->options.sessionCacheOff
+#if defined(HAVE_SESSION_TICKET) && defined(WOLFSSL_FORCE_CACHE_ON_TICKET)
+            && ssl->session.ticketLen == 0
+#endif
+#ifdef OPENSSL_EXTRA
+            && ssl->options.side != WOLFSSL_CLIENT_END
+#endif
+            )
         return 0;
 
     if (ssl->options.haveSessionId == 0)
@@ -28315,7 +28336,7 @@ int wolfSSL_i2d_ASN1_OBJECT(WOLFSSL_ASN1_OBJECT *a, unsigned char **pp)
     return a->objSz;
 }
 
-#if defined(OPENSSL_ALL) || defined(WOLFSSL_HAPROXY)
+#if defined(OPENSSL_ALL) || defined(WOLFSSL_HAPROXY) || defined(WOLFSSL_WPAS)
 WOLFSSL_API size_t wolfSSL_get_finished(const WOLFSSL *ssl, void *buf, size_t count)
 {
     WOLFSSL_ENTER("SSL_get_finished");
